@@ -1,5 +1,6 @@
+
 export default function Eulogy() {
-  const pdf = '/rev-captain-christopher-eulogy.pdf';
+  const pdf = '/eulogy-screen.pdf';
 
   return (
     <main className="eulogy-page">
@@ -12,6 +13,7 @@ export default function Eulogy() {
           Remembering his life, faith, service, and the many people
           whose lives he touched.
         </p>
+
         <div className="eulogy-actions">
           <a href={`${pdf}#page=3`} target="_blank" rel="noreferrer">
             Read the English Eulogy
@@ -28,12 +30,14 @@ export default function Eulogy() {
           The original booklet includes the funeral programme, eulogy
           in English and Kikuyu, family tributes, hymns, and scripture.
         </p>
+
         <iframe
           title="Memorial booklet PDF"
           src={`${pdf}#page=3&view=FitH`}
           width="100%"
           height="850"
         />
+
         <p>
           If the document does not display on your device, use the
           download link above to read it in your PDF viewer.

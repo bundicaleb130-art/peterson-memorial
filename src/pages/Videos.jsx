@@ -1,63 +1,130 @@
-import { useState } from 'react';
 
-export default function Videos() {
-  const [url, setUrl] = useState('');
-  const [videos, setVideos] = useState(() => {
-    try {
-      return JSON.parse(localStorage.getItem('petersonVideos') || '[]');
-    } catch {
-      return [];
-    }
-  });
-  const [message, setMessage] = useState('');
+import { useEffect, useState } from 'react';
+import { supabase } from '../lib/supabase';
 
-  function addVideo(event) {
-    event.preventDefault();
+function getYouTubeId(value) {
+  try {
+    const parsed = new URL(value.trim());
 
-    let parsed;
-    try {
-      parsed = new URL(url.trim());
-    } catch {
-      setMessage('Enter a valid YouTube video URL.');
-      return;
-    }
-
-    if (!['youtube.com', 'www.youtube.com', 'youtu.be', 'm.youtube.com'].includes(parsed.hostname)) {
-      setMessage('Please use a YouTube video link.');
-      return;
+    if (parsed.protocol !== 'https:' && parsed.protocol !== 'http:') {
+      return null;
     }
 
     let id = '';
+
     if (parsed.hostname === 'youtu.be') {
-      id = parsed.pathname.slice(1).split('/')[0];
-    } else {
-      id = parsed.searchParams.get('v') || parsed.pathname.match(/\/(?:embed|shorts)\/([^/]+)/)?.[1] || '';
+      id = parsed.pathname.split('/').filter(Boolean)[0] || '';
+    } else if (
+      ['youtube.com', 'www.youtube.com', 'm.youtube.com', 'youtube-nocookie.com'].includes(
+        parsed.hostname
+      )
+    ) {
+      id =
+        parsed.searchParams.get('v') ||
+        parsed.pathname.match(/\/(?:embed|shorts)\/([^/]+)/)?.[1] ||
+        '';
     }
 
-    if (!/^[\w-]{11}$/.test(id)) {
-      setMessage('That does not look like a valid YouTube video link.');
+    return /^[\w-]{11}$/.test(id) ? id : null;
+  } catch {
+    return null;
+  }
+}
+
+export default function Videos() {
+  const [url, setUrl] = useState('');
+  const [name, setName] = useState('');
+  const [videos, setVideos] = useState([]);
+  const [message, setMessage] = useState('');
+  const [loading, setLoading] = useState(true);
+  const [submitting, setSubmitting] = useState(false);
+
+  useEffect(() => {
+    let active = true;
+
+    async function loadVideos() {
+      if (!supabase) {
+        setMessage('Online service is not configured.');
+        setLoading(false);
+        return;
+      }
+
+      const { data, error } = await supabase
+        .from('memorial_submissions')
+        .select('id, name, video_url, created_at')
+        .eq('submission_type', 'video')
+        .eq('status', 'approved')
+        .order('created_at', { ascending: false });
+
+      if (!active) return;
+
+      if (error) {
+        console.error('Could not load videos:', error.message);
+        setMessage('Videos could not be loaded. Please try again later.');
+      } else {
+        setVideos(
+          (data || []).map(video => ({
+            ...video,
+            id: getYouTubeId(video.video_url)
+          })).filter(video => video.id)
+        );
+      }
+
+      setLoading(false);
+    }
+
+    loadVideos();
+
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  async function addVideo(event) {
+    event.preventDefault();
+    setMessage('');
+
+    if (!supabase) {
+      setMessage('Online service is not configured.');
       return;
     }
 
-    const updated = [
-      ...videos,
-      { id, url: `https://www.youtube.com/watch?v=${id}`, addedAt: new Date().toISOString() }
-    ];
+    const id = getYouTubeId(url);
 
-    try {
-      localStorage.setItem('petersonVideos', JSON.stringify(updated));
-      setVideos(updated);
-      setUrl('');
-      setMessage('Video added in this browser.');
-    } catch {
-      setMessage('Browser storage is full. The video was not saved.');
+    if (!id) {
+      setMessage('Enter a valid YouTube video URL using HTTPS.');
+      return;
     }
-  }
 
-  function removeVideo(index) {
-    const updated = videos.filter((_, i) => i !== index);
-    localStorage.setItem('petersonVideos', JSON.stringify(updated));
-    setVideos(updated);
+    if (!name.trim()) {
+      setMessage('Enter your name.');
+      return;
+    }
+
+    setSubmitting(true);
+
+    const { error } = await supabase
+      .from('memorial_submissions')
+      .insert({
+        submission_type: 'video',
+        name: name.trim(),
+        video_url: `https://www.youtube.com/watch?v=${id}`,
+        media_path: null,
+        message: null,
+        status: 'pending'
+      });
+
+    setSubmitting(false);
+
+    if (error) {
+      console.error('Video submission failed:', error.message);
+      setMessage('Your video could not be submitted. Please try again.');
+      return;
+    }
+
+    setUrl('');
+    setName('');
+    setMessage('Video submitted for family approval. It will appear after approval.');
   }
 
   return (
@@ -72,36 +139,51 @@ export default function Videos() {
       </section>
 
       <section className="video-add-panel">
-        <h2>Add a video</h2>
-        <p>Use a YouTube link to add a video to this browser's collection.</p>
+        <h2>Suggest a video</h2>
+        <p>Submit a YouTube link for the family to review.</p>
+
         <form onSubmit={addVideo}>
+          <label htmlFor="video-name">Your name</label>
+          <input
+            id="video-name"
+            value={name}
+            onChange={event => setName(event.target.value)}
+            maxLength={100}
+            required
+            placeholder="Enter your name"
+          />
+
           <label htmlFor="video-url">YouTube video URL</label>
           <input
             id="video-url"
             type="url"
             value={url}
             onChange={event => setUrl(event.target.value)}
-            placeholder="https://www.youtube.com/watch?v=..."
+            maxLength={500}
             required
+            placeholder="https://www.youtube.com/watch?v=..."
           />
-          <button type="submit">Add video</button>
+
+          <button type="submit" disabled={submitting}>
+            {submitting ? 'Submitting...' : 'Submit for approval'}
+          </button>
         </form>
+
         {message && <p role="status">{message}</p>}
       </section>
 
-      {videos.length === 0 ? (
+      {loading ? (
+        <p>Loading approved videos...</p>
+      ) : videos.length === 0 ? (
         <section className="video-empty">
           <span className="eyebrow">THE VIDEO COLLECTION</span>
           <h2>Moments worth remembering</h2>
-          <p>
-            Family-approved videos will appear here. Add a YouTube link
-            above to test the gallery.
-          </p>
+          <p>Approved family videos will appear here.</p>
         </section>
       ) : (
         <section className="video-grid">
           {videos.map((video, index) => (
-            <article className="video-card" key={`${video.id}-${index}`}>
+            <article className="video-card" key={video.id}>
               <div className="video-frame">
                 <iframe
                   src={`https://www.youtube-nocookie.com/embed/${video.id}`}
@@ -114,9 +196,6 @@ export default function Videos() {
               </div>
               <div className="video-card-footer">
                 <span>MEMORIAL VIDEO {String(index + 1).padStart(2, '0')}</span>
-                <button type="button" onClick={() => removeVideo(index)}>
-                  Remove
-                </button>
               </div>
             </article>
           ))}
@@ -124,8 +203,8 @@ export default function Videos() {
       )}
 
       <p className="video-notice">
-        This collection currently saves links only in this browser. Shared
-        public submissions and family approval require online storage.
+        Video suggestions are reviewed by the family before appearing
+        in the public collection.
       </p>
     </main>
   );
