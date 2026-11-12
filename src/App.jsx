@@ -7,8 +7,6 @@ import Gallery from './pages/Gallery';
 import Videos from './pages/Videos';
 import Tributes from './pages/Tributes';
 import Faith from './pages/Faith';
-import Burial from './pages/Burial';
-import EventDay from './pages/EventDay';
 import Eulogy from './pages/Eulogy';
 import './App.css';
 
@@ -39,8 +37,6 @@ export default function App() {
           <Route path="/videos" element={<Videos />} />
           <Route path="/tributes" element={<Tributes />} />
           <Route path="/faith" element={<Faith />} />
-          <Route path="/burial" element={<Burial />} />
-          <Route path="/event-day" element={<EventDay />} />
           <Route path="/eulogy" element={<Eulogy />} />
           <Route
             path="/admin"

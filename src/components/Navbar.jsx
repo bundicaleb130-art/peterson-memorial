@@ -8,8 +8,6 @@ const links = [
   ['Videos', '/videos'],
   ['Tributes', '/tributes'],
   ['Faith', '/faith'],
-  ['Burial', '/burial'],
-  ['Event Day', '/event-day'],
 ];
 
 export default function Navbar() {
