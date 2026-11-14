@@ -5,20 +5,6 @@ import { supabase } from '../lib/supabase';
 const MAX_SIZE = 5 * 1024 * 1024;
 const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
 
-```jsx
-<section className="event-card" style={{ margin: '24px 0', textAlign: 'center' }}>
-  <h2>November 11 Photos</h2>
-  <p>View the photographs commemorating this special day.</p>
-  <a
-    href="https://drive.google.com/drive/folders/1Csqf6hSJGLM2Mi-6H7b27kr6veIoVUWJ?usp=sharing"
-    target="_blank"
-    rel="noopener noreferrer"
-    className="button button-dark"
-  >
-    View November 11 Photos
-  </a>
-</section>
-```
 export default function Gallery() {
   const [items, setItems] = useState([]);
   const [index, setIndex] = useState(0);

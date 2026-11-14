@@ -79,7 +79,7 @@ export default function Home() {
           </p>
 
           <div className="hero-buttons">
-            <Link to="/life" className="button button-dark">
+            <Link to="/his-life" className="button button-dark">
               Discover His Life <span>↗</span>
             </Link>
             <Link to="/gallery" className="button button-light">
@@ -182,7 +182,7 @@ export default function Home() {
         </div>
 
         <div className="collection-grid">
-          <Link to="/life" className="collection-card collection-life">
+          <Link to="/his-life" className="collection-card collection-life">
             <span className="collection-number">01 / HIS STORY</span>
             <div>
               <h3>A life remembered.</h3>
