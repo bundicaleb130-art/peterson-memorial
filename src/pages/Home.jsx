@@ -231,9 +231,6 @@ export default function Home() {
           <h3>Wednesday, 11 November 2026</h3>
           <p>Links Preparatory School grounds</p>
           <p>Final resting place: family home, Kiangurwe, Kirinyaga, Kenya.</p>
-          <Link to="/burial" className="button button-gold">
-            View Burial Information ↗
-          </Link>
         </div>
       </section>
 

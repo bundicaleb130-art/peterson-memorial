@@ -63,7 +63,6 @@ export default function HisLife() {
         <div className="life-links">
           <Link to="/gallery">View photographs</Link>
           <Link to="/videos">Watch video memories</Link>
-          <Link to="/event-day">Event information</Link>
         </div>
       </section>
     </main>
