@@ -8,6 +8,8 @@ import Videos from './pages/Videos';
 import Tributes from './pages/Tributes';
 import Faith from './pages/Faith';
 import Eulogy from './pages/Eulogy';
+import Burial from './pages/Burial';
+import EventDay from './pages/EventDay';
 import './App.css';
 
 function ComingSoon({ title, description }) {
@@ -38,6 +40,8 @@ export default function App() {
           <Route path="/tributes" element={<Tributes />} />
           <Route path="/faith" element={<Faith />} />
           <Route path="/eulogy" element={<Eulogy />} />
+          <Route path="/burial" element={<Burial />} />
+          <Route path="/event-day" element={<EventDay />} />
           <Route
             path="/admin"
             element={
