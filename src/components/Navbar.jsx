@@ -2,7 +2,7 @@ import { NavLink } from 'react-router-dom';
 
 const links = [
   ['Home', '/'],
-  ['His Life', '/life'],
+  ['His Life', '/his-life'],
   ['Eulogy', '/eulogy'],
   ['Photos', '/gallery'],
   ['Videos', '/videos'],
